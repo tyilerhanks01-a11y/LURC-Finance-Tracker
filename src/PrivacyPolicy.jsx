@@ -3,7 +3,6 @@ import React from "react";
 // Bump this whenever the wording below materially changes.
 const LAST_UPDATED = "19 August 2026";
 
-const card = { borderColor: "#1c2a44", background: "#faf7ee" };
 const muted = { color: "#6b6350" };
 
 function Section({ title, children }) {
@@ -28,18 +27,11 @@ export default function PrivacyPolicy() {
       </header>
 
       <main className="max-w-3xl mx-auto px-6 sm:px-10 py-10">
-        <div className="border-2 p-6 mb-8 text-xs leading-relaxed" style={card}>
-          This page describes exactly what "The Ledger" (this app) collects and does with your data — nothing
-          more. It's written in plain language to match what the app actually does, not a generic template. It
-          isn't a substitute for legal advice; if your students' union or university requires its own
-          data-protection wording for society-run tools, check with them before relying on this as final.
-        </div>
-
         <Section title="Who runs this">
           <p>
-            "The Ledger" is a finance-tracking tool built and run by the University of Liverpool Riding Club
-            (UoL RC) for its own committee and members. It is not a commercial product and your data is never
-            sold, shared with advertisers, or used for marketing.
+            "The Ledger" is a finance-tracking tool built and run by the Treasurer of the University of
+            Liverpool Riding Club (UoL RC), for the club's committee and members. It is not a commercial
+            product and your data is never sold, shared with advertisers, or used for marketing.
           </p>
         </Section>
 
@@ -99,8 +91,8 @@ export default function PrivacyPolicy() {
         <Section title="Your rights">
           <p>
             Under UK data protection law you can ask to see the data we hold about you, ask us to correct it,
-            or ask for it to be deleted. Contact the club (below) to make a request. If you're unhappy with how
-            a request is handled, you can complain to the UK Information Commissioner's Office (ICO) at{" "}
+            or ask for it to be deleted. Contact the Treasurer (below) to make a request. If you're unhappy with
+            how a request is handled, you can complain to the UK Information Commissioner's Office (ICO) at{" "}
             <a className="underline" href="https://ico.org.uk" target="_blank" rel="noreferrer">ico.org.uk</a>.
           </p>
         </Section>
@@ -115,7 +107,7 @@ export default function PrivacyPolicy() {
 
         <Section title="Contact">
           <p>
-            Questions about this policy or your data: contact the UoL Riding Club committee at{" "}
+            Questions about this policy or your data: contact the Treasurer at{" "}
             <a className="underline" href="mailto:sgthanks@liverpool.ac.uk">sgthanks@liverpool.ac.uk</a>.
           </p>
         </Section>
