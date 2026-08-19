@@ -30,7 +30,7 @@ export default function PrivacyPolicy() {
         <Section title="Who runs this">
           <p>
             "The Ledger" is a finance-tracking tool built and run by the Treasurer of the University of
-            Liverpool Riding Club (UoL RC), for the club's committee and members. It is not a commercial
+            Liverpool Riding Club (LURC), for the club's committee and members. It is not a commercial
             product and your data is never sold, shared with advertisers, or used for marketing.
           </p>
         </Section>
