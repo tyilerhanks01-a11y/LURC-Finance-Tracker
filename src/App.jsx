@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import { supabase } from "./supabaseClient";
 import PrivacyPolicy from "./PrivacyPolicy";
+import EmailConfirmed from "./EmailConfirmed";
 
 const PALETTE = ["#c99a3e", "#8a3f3f", "#a4623f", "#5c6b4a", "#7a5c99", "#3f6b8a", "#6b6350", "#a13d2f", "#4a7a6b", "#8a5f3f"];
 const catColor = (name, categories) => {
@@ -104,7 +105,11 @@ export default function App() {
     const { error } =
       authMode === "login"
         ? await supabase.auth.signInWithPassword({ email: authForm.email, password: authForm.password })
-        : await supabase.auth.signUp({ email: authForm.email, password: authForm.password });
+        : await supabase.auth.signUp({
+            email: authForm.email,
+            password: authForm.password,
+            options: { emailRedirectTo: `${window.location.origin}/confirmed` },
+          });
     setAuthBusy(false);
     if (error) setAuthError(error.message);
   };
@@ -216,6 +221,10 @@ export default function App() {
 
   if (window.location.pathname === "/privacy") {
     return <PrivacyPolicy />;
+  }
+
+  if (window.location.pathname === "/confirmed") {
+    return <EmailConfirmed />;
   }
 
   if (session === undefined) {
