@@ -29,6 +29,7 @@ export default function App() {
   const [forgotBusy, setForgotBusy] = useState(false);
   const [forgotError, setForgotError] = useState("");
   const [forgotSent, setForgotSent] = useState(false);
+  const [showLoginSuccess, setShowLoginSuccess] = useState(false);
 
   const [categories, setCategories] = useState([]);
   const [transactions, setTransactions] = useState([]);
@@ -127,6 +128,9 @@ export default function App() {
       setResendMessage("");
       setResendCooldown(30);
       setShowConfirmModal(true);
+    } else {
+      setShowLoginSuccess(true);
+      setTimeout(() => setShowLoginSuccess(false), 2600);
     }
   };
 
@@ -282,13 +286,12 @@ export default function App() {
     return <ResetPassword />;
   }
 
-  if (session === undefined) {
-    return <Centered>loading…</Centered>;
-  }
+  let content;
 
-  // Not logged in
-  if (!session) {
-    return (
+  if (session === undefined) {
+    content = <Centered>loading…</Centered>;
+  } else if (!session) {
+    content = (
       <Centered>
         <div className="w-full max-w-sm border-2 p-8" style={{ borderColor: T.border, background: T.panel }}>
           <div className="text-xs tracking-[0.25em] mb-1 font-semibold" style={{ color: T.accent }}>UoL RIDING CLUB</div>
@@ -397,12 +400,9 @@ export default function App() {
         )}
       </Centered>
     );
-  }
-
-  // Logged in but not yet approved (or revoked / profile deleted)
-  if (!isApproved) {
+  } else if (!isApproved) {
     const revoked = !profile || profile.role === "removed";
-    return (
+    content = (
       <Centered>
         <div className="w-full max-w-sm border-2 p-8 text-center" style={{ borderColor: T.border, background: T.panel }}>
           <h1 className="serif text-2xl mb-3" style={{ color: T.ink }}>
@@ -417,11 +417,9 @@ export default function App() {
         </div>
       </Centered>
     );
-  }
-
-  const tabs = ["dashboard", ...(isEditor ? ["add"] : []), "budget", ...(isAdmin ? ["admin"] : [])];
-
-  return (
+  } else {
+    const tabs = ["dashboard", ...(isEditor ? ["add"] : []), "budget", ...(isAdmin ? ["admin"] : [])];
+    content = (
     <div className="min-h-screen w-full" style={{ background: T.bg, backgroundImage: "repeating-linear-gradient(0deg, transparent, transparent 27px, rgba(242,237,225,0.03) 28px)", color: T.ink }}>
       <header className="border-b-2 px-6 pt-10 pb-6 sm:px-10" style={{ borderColor: T.border }}>
         <div className="max-w-5xl mx-auto flex items-end justify-between flex-wrap gap-4">
@@ -726,6 +724,14 @@ export default function App() {
       </main>
       <Footer />
     </div>
+    );
+  }
+
+  return (
+    <>
+      {content}
+      {showLoginSuccess && <LoginSuccessOverlay />}
+    </>
   );
 }
 
@@ -743,5 +749,18 @@ function Footer() {
     <footer className="w-full text-center py-5 text-[10px] tracking-wide" style={{ color: T.faint }}>
       <a href="/privacy" className="underline">Privacy &amp; Data Use Policy</a>
     </footer>
+  );
+}
+
+function LoginSuccessOverlay() {
+  return (
+    <div className="fixed inset-0 flex items-center justify-center px-6 z-20" style={{ background: "rgba(6,10,20,0.75)" }}>
+      <div className="w-full max-w-xs border-2 p-8 text-center overflow-hidden" style={{ borderColor: T.border, background: T.panel }}>
+        <div className="text-5xl gallop" aria-hidden="true">🐎</div>
+        <div className="h-px mt-2 mb-4" style={{ background: T.hairline }} />
+        <h2 className="serif text-xl mb-1" style={{ color: T.ink }}>Login successful</h2>
+        <p className="text-xs" style={{ color: T.muted }}>Redirecting&hellip;</p>
+      </div>
+    </div>
   );
 }
