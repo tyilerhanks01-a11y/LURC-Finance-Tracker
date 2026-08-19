@@ -38,7 +38,7 @@ begin
   -- Everything below is best-effort: a broken notification (missing Vault,
   -- missing pg_net, Resend down, etc.) must never block someone signing up.
   begin
-    select array_agg(email) into admin_emails from profiles where role in ('admin', 'super_admin') and email is not null;
+    select array_agg(email) into admin_emails from public.profiles where role in ('admin', 'super_admin') and email is not null;
     if admin_emails is null or array_length(admin_emails, 1) = 0 then
       return new;
     end if;
