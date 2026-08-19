@@ -21,11 +21,12 @@ create trigger on_auth_user_created
   after insert on auth.users
   for each row execute procedure handle_new_user();
 
--- Categories
+-- Categories (expenditure lines with a budget, or income sources with no budget)
 create table categories (
   id uuid primary key default gen_random_uuid(),
   name text not null,
   budget numeric not null default 0,
+  type text not null default 'expenditure' check (type in ('income', 'expenditure')),
   created_at timestamptz default now()
 );
 
@@ -205,15 +206,22 @@ create policy "admins delete transactions" on transactions for delete using (is_
 create policy "approved members read settings" on settings for select using (is_approved());
 create policy "editors update settings" on settings for update using (is_editor());
 
--- Seed the default categories used by UoL Riding Club last year
-insert into categories (name, budget) values
-  ('Toll Costs', 450),
-  ('Lesson Subsidies', 300),
-  ('Competition Food', 200),
-  ('Venue Hire', 150),
-  ('Petrol / Mileage', 200),
-  ('Events & Social', 100),
-  ('Other', 100);
+-- Seed the default expenditure categories used by UoL Riding Club last year
+insert into categories (name, budget, type) values
+  ('Toll Costs', 450, 'expenditure'),
+  ('Lesson Subsidies', 300, 'expenditure'),
+  ('Competition Food', 200, 'expenditure'),
+  ('Venue Hire', 150, 'expenditure'),
+  ('Petrol / Mileage', 200, 'expenditure'),
+  ('Events & Social', 100, 'expenditure'),
+  ('Other', 100, 'expenditure');
+
+-- Seed default income sources (no budget — these just categorise money coming in)
+insert into categories (name, budget, type) values
+  ('Memberships', 0, 'income'),
+  ('Sponsorship', 0, 'income'),
+  ('Fundraising', 0, 'income'),
+  ('Other Income', 0, 'income');
 
 -- IMPORTANT — one-time manual step after your own first signup:
 -- Find your user id from the "profiles" table (Table Editor), then run:

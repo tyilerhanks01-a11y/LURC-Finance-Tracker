@@ -52,6 +52,7 @@ export default function App() {
   const [draftTotal, setDraftTotal] = useState(1500);
   const [newCatName, setNewCatName] = useState("");
   const [newCatBudget, setNewCatBudget] = useState("");
+  const [newIncomeName, setNewIncomeName] = useState("");
 
   // --- Auth session ---
   useEffect(() => {
@@ -94,7 +95,8 @@ export default function App() {
     setCategories(cats || []);
     setTransactions(txns || []);
     if (settings) setTotalBudget(settings.total_budget);
-    if (cats && cats.length && !form.category) setForm((f) => ({ ...f, category: cats[0].name }));
+    const defaultExpCat = cats && cats.find((c) => c.type !== "income");
+    if (defaultExpCat && !form.category) setForm((f) => ({ ...f, category: defaultExpCat.name }));
   };
 
   const loadProfiles = async () => {
@@ -215,9 +217,9 @@ export default function App() {
     for (const id of removed) await supabase.from("categories").delete().eq("id", id);
     for (const c of draftCategories) {
       if (c.id) {
-        await supabase.from("categories").update({ name: c.name, budget: c.budget }).eq("id", c.id);
+        await supabase.from("categories").update({ name: c.name, budget: c.budget, type: c.type || "expenditure" }).eq("id", c.id);
       } else {
-        await supabase.from("categories").insert({ name: c.name, budget: c.budget });
+        await supabase.from("categories").insert({ name: c.name, budget: c.budget, type: c.type || "expenditure" });
       }
     }
     setEditingBudget(false);
@@ -227,11 +229,18 @@ export default function App() {
   const addDraftCategory = () => {
     if (!newCatName.trim()) return;
     if (draftCategories.some((c) => c.name.toLowerCase() === newCatName.trim().toLowerCase())) return;
-    setDraftCategories([...draftCategories, { name: newCatName.trim(), budget: parseFloat(newCatBudget) || 0 }]);
+    setDraftCategories([...draftCategories, { name: newCatName.trim(), budget: parseFloat(newCatBudget) || 0, type: "expenditure" }]);
     setNewCatName("");
     setNewCatBudget("");
   };
+  const addDraftIncomeSource = () => {
+    if (!newIncomeName.trim()) return;
+    if (draftCategories.some((c) => c.name.toLowerCase() === newIncomeName.trim().toLowerCase())) return;
+    setDraftCategories([...draftCategories, { name: newIncomeName.trim(), budget: 0, type: "income" }]);
+    setNewIncomeName("");
+  };
   const removeDraftCategory = (name) => setDraftCategories(draftCategories.filter((c) => c.name !== name));
+  const updateDraftBudget = (name, budget) => setDraftCategories(draftCategories.map((c) => (c.name === name ? { ...c, budget } : c)));
 
   // --- Admin ---
   const setRole = async (id, role) => {
@@ -263,12 +272,26 @@ export default function App() {
     return { income, expenditure, balance: totalBudget + income - expenditure };
   }, [transactions, totalBudget]);
 
+  const expenseCategories = useMemo(() => categories.filter((c) => c.type !== "income"), [categories]);
+  const incomeCategories = useMemo(() => categories.filter((c) => c.type === "income"), [categories]);
+
   const byCategory = useMemo(() => {
-    return categories.map((c) => {
+    return expenseCategories.map((c) => {
       const spent = transactions.filter((t) => t.type === "Expenditure" && t.category === c.name).reduce((s, t) => s + Number(t.amount), 0);
       return { ...c, spent, remaining: c.budget - spent, pct: c.budget ? spent / c.budget : 0 };
     });
-  }, [categories, transactions]);
+  }, [expenseCategories, transactions]);
+
+  const byIncomeSource = useMemo(() => {
+    const totalsBySource = {};
+    transactions.filter((t) => t.type === "Income").forEach((t) => {
+      const key = t.category || "Uncategorised";
+      totalsBySource[key] = (totalsBySource[key] || 0) + Number(t.amount);
+    });
+    return Object.entries(totalsBySource)
+      .map(([name, amount]) => ({ name, amount }))
+      .sort((a, b) => b.amount - a.amount);
+  }, [transactions]);
 
   const spendPct = totalBudget ? totals.expenditure / totalBudget : 0;
 
@@ -479,6 +502,25 @@ export default function App() {
               </div>
             </section>
 
+            {byIncomeSource.length > 0 && (
+              <section>
+                <h2 className="serif text-xl mb-3">Income by source</h2>
+                <div className="border-2 p-4" style={{ borderColor: T.border, background: T.panel }}>
+                  <ResponsiveContainer width="100%" height={Math.max(120, byIncomeSource.length * 40)}>
+                    <BarChart data={byIncomeSource} layout="vertical" margin={{ left: 10, right: 20 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke={T.hairline} horizontal={false} />
+                      <XAxis type="number" tick={{ fontSize: 11, fill: T.muted }} tickFormatter={(v) => `£${v}`} />
+                      <YAxis type="category" dataKey="name" width={120} tick={{ fontSize: 12, fill: T.ink }} />
+                      <Tooltip formatter={(v) => money(v)} contentStyle={{ fontSize: 12, borderRadius: 0, borderColor: T.border, background: T.panel, color: T.ink }} labelStyle={{ color: T.ink }} />
+                      <Bar dataKey="amount" radius={[0, 2, 2, 0]}>
+                        {byIncomeSource.map((s) => <Cell key={s.name} fill={catColor(s.name, categories)} />)}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </section>
+            )}
+
             {transactions.some((t) => t.type === "Expenditure") && (
               <section>
                 <h2 className="serif text-xl mb-3">Spend by category</h2>
@@ -541,7 +583,10 @@ export default function App() {
                 <label className="text-[10px] tracking-widest block mb-1" style={{ color: T.muted }}>TYPE</label>
                 <div className="flex gap-1">
                   {["Expenditure", "Income"].map((t) => (
-                    <button type="button" key={t} onClick={() => setForm({ ...form, type: t })} className="flex-1 text-xs py-2 border"
+                    <button type="button" key={t} onClick={() => {
+                      const opts = t === "Income" ? incomeCategories : expenseCategories;
+                      setForm({ ...form, type: t, category: opts[0]?.name || "" });
+                    }} className="flex-1 text-xs py-2 border"
                       style={{ borderColor: T.border, background: form.type === t ? T.accent : "transparent", color: form.type === t ? T.accentInk : T.ink }}>
                       {t}
                     </button>
@@ -557,10 +602,12 @@ export default function App() {
                 <input type="text" value={form.desc} onChange={(e) => setForm({ ...form, desc: e.target.value })} placeholder="e.g. Mersey Tunnel tolls x6" className="w-full border px-2 py-1.5 text-xs bg-transparent" style={inputStyle} />
               </div>
               <div>
-                <label className="text-[10px] tracking-widest block mb-1" style={{ color: T.muted }}>CATEGORY</label>
+                <label className="text-[10px] tracking-widest block mb-1" style={{ color: T.muted }}>{form.type === "Income" ? "SOURCE" : "CATEGORY"}</label>
                 <select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className="w-full border px-2 py-1.5 text-xs bg-transparent" style={inputStyle}>
-                  {categories.length === 0 && <option value="">No categories yet</option>}
-                  {categories.map((c) => <option key={c.id} value={c.name}>{c.name}</option>)}
+                  {(form.type === "Income" ? incomeCategories : expenseCategories).length === 0 && (
+                    <option value="">{form.type === "Income" ? "No income sources yet" : "No categories yet"}</option>
+                  )}
+                  {(form.type === "Income" ? incomeCategories : expenseCategories).map((c) => <option key={c.id} value={c.name}>{c.name}</option>)}
                 </select>
               </div>
               <div className="grid grid-cols-2 gap-3">
@@ -585,34 +632,46 @@ export default function App() {
               {isEditor && !editingBudget && <button onClick={openBudgetEditor} className="text-[10px] px-3 py-1.5 border" style={{ borderColor: T.border }}>EDIT</button>}
             </div>
             {!editingBudget ? (
-              <div className="border-2" style={{ borderColor: T.border, background: T.panel }}>
-                <div className="px-4 py-3 flex justify-between border-b-2" style={{ borderColor: T.border }}>
-                  <span className="text-xs font-semibold">Total AU allocation</span>
-                  <span className="text-xs">{money(totalBudget)}</span>
-                </div>
-                {categories.length === 0 ? (
-                  <div className="p-6 text-center text-xs" style={{ color: T.muted }}>No categories set up. Click EDIT to add some.</div>
-                ) : categories.map((c, i) => (
-                  <div key={c.id} className="px-4 py-3 flex justify-between text-xs" style={{ borderBottom: i < categories.length - 1 ? `1px solid ${T.hairline}` : "none" }}>
-                    <span>{c.name}</span>
-                    <span>{money(c.budget)}</span>
+              <>
+                <div className="border-2" style={{ borderColor: T.border, background: T.panel }}>
+                  <div className="px-4 py-3 flex justify-between border-b-2" style={{ borderColor: T.border }}>
+                    <span className="text-xs font-semibold">Total AU allocation</span>
+                    <span className="text-xs">{money(totalBudget)}</span>
                   </div>
-                ))}
-              </div>
+                  {expenseCategories.length === 0 ? (
+                    <div className="p-6 text-center text-xs" style={{ color: T.muted }}>No categories set up. Click EDIT to add some.</div>
+                  ) : expenseCategories.map((c, i) => (
+                    <div key={c.id} className="px-4 py-3 flex justify-between text-xs" style={{ borderBottom: i < expenseCategories.length - 1 ? `1px solid ${T.hairline}` : "none" }}>
+                      <span>{c.name}</span>
+                      <span>{money(c.budget)}</span>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="text-[10px] tracking-widest mt-8 mb-2" style={{ color: T.muted }}>INCOME SOURCES</div>
+                <div className="border-2" style={{ borderColor: T.border, background: T.panel }}>
+                  {incomeCategories.length === 0 ? (
+                    <div className="p-6 text-center text-xs" style={{ color: T.muted }}>No income sources set up. Click EDIT to add some.</div>
+                  ) : incomeCategories.map((c, i) => (
+                    <div key={c.id} className="px-4 py-3 flex justify-between text-xs" style={{ borderBottom: i < incomeCategories.length - 1 ? `1px solid ${T.hairline}` : "none" }}>
+                      <span>{c.name}</span>
+                      <span style={{ color: T.success }}>{money(byIncomeSource.find((s) => s.name === c.name)?.amount || 0)} raised</span>
+                    </div>
+                  ))}
+                </div>
+              </>
             ) : (
               <div className="border-2 p-5 space-y-3" style={{ borderColor: T.border, background: T.panel }}>
                 <div>
                   <label className="text-[10px] tracking-widest block mb-1" style={{ color: T.muted }}>TOTAL AU ALLOCATION (£)</label>
                   <input type="number" value={draftTotal} onChange={(e) => setDraftTotal(e.target.value)} className="w-full border px-2 py-1.5 text-xs bg-transparent" style={inputStyle} />
                 </div>
-                {draftCategories.map((c, i) => (
+                <div className="text-[10px] tracking-widest pt-2" style={{ color: T.muted }}>EXPENDITURE CATEGORIES</div>
+                {draftCategories.filter((c) => c.type !== "income").map((c) => (
                   <div key={c.id || c.name} className="flex items-center gap-2">
                     <span className="text-xs flex-1 truncate">{c.name}</span>
-                    <input type="number" value={c.budget} onChange={(e) => {
-                      const next = [...draftCategories];
-                      next[i] = { ...next[i], budget: parseFloat(e.target.value) || 0 };
-                      setDraftCategories(next);
-                    }} className="w-24 border px-2 py-1 text-xs bg-transparent text-right" style={inputStyle} />
+                    <input type="number" value={c.budget} onChange={(e) => updateDraftBudget(c.name, parseFloat(e.target.value) || 0)}
+                      className="w-24 border px-2 py-1 text-xs bg-transparent text-right" style={inputStyle} />
                     <button onClick={() => removeDraftCategory(c.name)} style={{ color: T.danger }}>✕</button>
                   </div>
                 ))}
@@ -624,6 +683,22 @@ export default function App() {
                     <button type="button" onClick={addDraftCategory} className="px-3 text-xs border" style={{ borderColor: T.border }}>ADD</button>
                   </div>
                 </div>
+
+                <div className="text-[10px] tracking-widest pt-4 border-t" style={{ color: T.muted, borderColor: T.hairline }}>INCOME SOURCES</div>
+                {draftCategories.filter((c) => c.type === "income").map((c) => (
+                  <div key={c.id || c.name} className="flex items-center gap-2">
+                    <span className="text-xs flex-1 truncate">{c.name}</span>
+                    <button onClick={() => removeDraftCategory(c.name)} style={{ color: T.danger }}>✕</button>
+                  </div>
+                ))}
+                <div className="pt-2 border-t" style={{ borderColor: T.hairline }}>
+                  <label className="text-[10px] tracking-widest block mb-1 mt-2" style={{ color: T.muted }}>ADD NEW INCOME SOURCE</label>
+                  <div className="flex gap-2">
+                    <input type="text" value={newIncomeName} onChange={(e) => setNewIncomeName(e.target.value)} placeholder="e.g. Memberships" className="flex-1 border px-2 py-1.5 text-xs bg-transparent" style={inputStyle} />
+                    <button type="button" onClick={addDraftIncomeSource} className="px-3 text-xs border" style={{ borderColor: T.border }}>ADD</button>
+                  </div>
+                </div>
+
                 <div className="flex gap-2 pt-3">
                   <button onClick={saveBudget} className="flex-1 py-2 text-xs tracking-widest font-semibold" style={{ background: T.accent, color: T.accentInk }}>SAVE</button>
                   <button onClick={() => setEditingBudget(false)} className="flex-1 py-2 text-xs tracking-widest border" style={{ borderColor: T.border }}>CANCEL</button>
