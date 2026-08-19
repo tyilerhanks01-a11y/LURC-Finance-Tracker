@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import { supabase } from "./supabaseClient";
+import PrivacyPolicy from "./PrivacyPolicy";
 
 const PALETTE = ["#c99a3e", "#8a3f3f", "#a4623f", "#5c6b4a", "#7a5c99", "#3f6b8a", "#6b6350", "#a13d2f", "#4a7a6b", "#8a5f3f"];
 const catColor = (name, categories) => {
@@ -212,6 +213,10 @@ export default function App() {
   const spendPct = totalBudget ? totals.expenditure / totalBudget : 0;
 
   // ---------------- RENDER ----------------
+
+  if (window.location.pathname === "/privacy") {
+    return <PrivacyPolicy />;
+  }
 
   if (session === undefined) {
     return <Centered>loading…</Centered>;
@@ -581,14 +586,24 @@ export default function App() {
           </section>
         )}
       </main>
+      <Footer />
     </div>
   );
 }
 
 function Centered({ children }) {
   return (
-    <div className="min-h-screen w-full flex items-center justify-center" style={{ background: "#f2ede1", color: "#6b6350" }}>
-      {children}
+    <div className="min-h-screen w-full flex flex-col" style={{ background: "#f2ede1", color: "#6b6350" }}>
+      <div className="flex-1 flex items-center justify-center px-6">{children}</div>
+      <Footer />
     </div>
+  );
+}
+
+function Footer() {
+  return (
+    <footer className="w-full text-center py-5 text-[10px] tracking-wide" style={{ color: "#8a8270" }}>
+      <a href="/privacy" className="underline">Privacy &amp; Data Use Policy</a>
+    </footer>
   );
 }
