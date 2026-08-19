@@ -373,7 +373,8 @@ export default function App() {
                 {transactions.length === 0 ? (
                   <div className="p-8 text-center text-xs" style={{ color: "#6b6350" }}>No transactions logged yet. Add your first one under ADD.</div>
                 ) : (
-                  <>
+                  <div className="overflow-x-auto">
+                  <div className="min-w-[440px]">
                     <div className="grid grid-cols-[85px_1fr_120px_100px_30px] text-[10px] tracking-widest px-4 py-2 border-b-2" style={{ borderColor: "#1c2a44", color: "#6b6350" }}>
                       <div>DATE</div><div>DESCRIPTION</div><div className="text-right">AMOUNT</div><div className="text-right">CATEGORY</div><div></div>
                     </div>
@@ -390,7 +391,8 @@ export default function App() {
                         </div>
                       ))}
                     </div>
-                  </>
+                  </div>
+                  </div>
                 )}
               </div>
             </section>
