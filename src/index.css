@@ -1,0 +1,14 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: "Courier Prime", "Courier New", monospace;
+}
+.serif {
+  font-family: "Fraunces", serif;
+}
+::selection {
+  background: #c99a3e;
+  color: #1c2a44;
+}
