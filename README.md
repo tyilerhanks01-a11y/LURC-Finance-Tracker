@@ -15,6 +15,7 @@ Code is complete and untested end-to-end (never run `npm install` / `npm run dev
 - `supabase-migration-keepalive.sql` — one-time migration adding a `keep_alive_ping()` RPC so the GitHub Actions ping (below) can prove real connectivity without needing anon read access to `settings`.
 - `supabase-migration-activity-log.sql` — one-time migration adding an `activity_log` table + triggers that record every transaction/category insert/update/delete (who did it and what) and every keep-alive ping. Visible to super admins only, via an ACTIVITY LOG panel at the bottom of the Admin tab.
 - `email-templates/confirm-signup.html` — branded HTML to paste into Supabase Dashboard > Authentication > Email Templates > Confirm signup, so signup confirmation emails match the site instead of Supabase's generic default.
+- `email-templates/reset-password.html` — same idea, for Authentication > Email Templates > Reset Password. Requires `/reset-password` to be in the Redirect URLs allow-list (Authentication > URL Configuration).
 - `.github/workflows/keep-alive.yml` — weekly ping to stop Supabase's free-tier 7-day inactivity pause. Needs `SUPABASE_URL` and `SUPABASE_ANON_KEY` added as GitHub repo secrets before it'll work.
 
 ### Roles
