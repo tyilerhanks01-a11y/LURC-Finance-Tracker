@@ -468,6 +468,10 @@ export default function App() {
       <main className="max-w-5xl mx-auto px-6 sm:px-10 py-8 space-y-10">
         {tab === "dashboard" && (
           <>
+            <section className="flex justify-center">
+              <BudgetHorseshoe pct={spendPct} totalBudget={totalBudget} />
+            </section>
+
             <section className="grid grid-cols-1 sm:grid-cols-4 gap-px" style={{ background: T.hairline }}>
               {[
                 ["Budget allocation", money(totalBudget), T.ink],
@@ -810,6 +814,53 @@ function Centered({ children }) {
     <div className="min-h-screen w-full flex flex-col" style={{ background: T.bg, color: T.muted }}>
       <div className="flex-1 flex items-center justify-center px-6">{children}</div>
       <Footer />
+    </div>
+  );
+}
+
+function pointOnCircle(cx, cy, r, angleDeg) {
+  const rad = (angleDeg * Math.PI) / 180;
+  return { x: cx + r * Math.sin(rad), y: cy - r * Math.cos(rad) };
+}
+
+// Angles measured clockwise from the top (12 o'clock = 0deg).
+function describeArc(cx, cy, r, startAngle, endAngle) {
+  const start = pointOnCircle(cx, cy, r, startAngle);
+  const end = pointOnCircle(cx, cy, r, endAngle);
+  const largeArcFlag = endAngle - startAngle <= 180 ? 0 : 1;
+  return `M ${start.x} ${start.y} A ${r} ${r} 0 ${largeArcFlag} 1 ${end.x} ${end.y}`;
+}
+
+function BudgetHorseshoe({ pct, totalBudget }) {
+  const remainingPct = Math.max(0, Math.min(1, 1 - pct));
+  const overBudget = pct > 1;
+  const remainingAmount = totalBudget * remainingPct;
+  const cx = 110;
+  const cy = 108;
+  const r = 85;
+  const gapHalf = 35; // horseshoe opening: 70deg wide, centered at the bottom
+  const startAngle = 180 + gapHalf;
+  const endAngle = 180 - gapHalf + 360;
+  const filledEnd = startAngle + remainingPct * (endAngle - startAngle);
+  const color = overBudget ? T.danger : T.success;
+
+  return (
+    <div className="flex flex-col items-center">
+      <svg viewBox="0 0 220 200" width="220" height="200">
+        <path d={describeArc(cx, cy, r, startAngle, endAngle)} fill="none" stroke={T.track} strokeWidth="18" strokeLinecap="round" />
+        {remainingPct > 0 && (
+          <path d={describeArc(cx, cy, r, startAngle, filledEnd)} fill="none" stroke={color} strokeWidth="18" strokeLinecap="round" />
+        )}
+        <text x={cx} y={cy - 4} textAnchor="middle" fontSize="30" fontWeight="900" fill={T.ink}>
+          {overBudget ? "OVER" : `${Math.round(remainingPct * 100)}%`}
+        </text>
+        <text x={cx} y={cy + 20} textAnchor="middle" fontSize="11" letterSpacing="2" fill={T.muted}>
+          REMAINING
+        </text>
+      </svg>
+      <div className="text-xs -mt-4" style={{ color: T.muted }}>
+        {money(remainingAmount)} of {money(totalBudget)} budget
+      </div>
     </div>
   );
 }
