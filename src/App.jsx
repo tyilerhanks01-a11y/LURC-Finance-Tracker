@@ -3,6 +3,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { supabase } from "./supabaseClient";
 import PrivacyPolicy from "./PrivacyPolicy";
 import EmailConfirmed from "./EmailConfirmed";
+import ResetPassword from "./ResetPassword";
 import { T, PALETTE } from "./theme";
 
 const catColor = (name, categories) => {
@@ -23,6 +24,11 @@ export default function App() {
   const [resendCooldown, setResendCooldown] = useState(0);
   const [resendBusy, setResendBusy] = useState(false);
   const [resendMessage, setResendMessage] = useState("");
+  const [showForgot, setShowForgot] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [forgotBusy, setForgotBusy] = useState(false);
+  const [forgotError, setForgotError] = useState("");
+  const [forgotSent, setForgotSent] = useState(false);
 
   const [categories, setCategories] = useState([]);
   const [transactions, setTransactions] = useState([]);
@@ -147,6 +153,18 @@ export default function App() {
     }
   };
 
+  const handleForgotPassword = async (e) => {
+    e.preventDefault();
+    setForgotError("");
+    setForgotBusy(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(forgotEmail, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    setForgotBusy(false);
+    if (error) setForgotError(error.message);
+    else setForgotSent(true);
+  };
+
   const logout = async () => {
     await supabase.auth.signOut();
     setTab("dashboard");
@@ -260,6 +278,10 @@ export default function App() {
     return <EmailConfirmed />;
   }
 
+  if (window.location.pathname === "/reset-password") {
+    return <ResetPassword />;
+  }
+
   if (session === undefined) {
     return <Centered>loading…</Centered>;
   }
@@ -268,39 +290,83 @@ export default function App() {
   if (!session) {
     return (
       <Centered>
-        <form onSubmit={handleAuth} className="w-full max-w-sm border-2 p-8" style={{ borderColor: T.border, background: T.panel }}>
+        <div className="w-full max-w-sm border-2 p-8" style={{ borderColor: T.border, background: T.panel }}>
           <div className="text-xs tracking-[0.25em] mb-1 font-semibold" style={{ color: T.accent }}>UoL RIDING CLUB</div>
           <h1 className="serif text-3xl mb-6" style={{ color: T.ink }}>The Ledger</h1>
-          <div className="flex gap-1 mb-4">
-            {["login", "signup"].map((m) => (
-              <button type="button" key={m} onClick={() => { setAuthMode(m); setAuthError(""); }}
-                className="flex-1 text-xs py-2 border" style={{ borderColor: T.border, background: authMode === m ? T.accent : "transparent", color: authMode === m ? T.accentInk : T.ink }}>
-                {m === "login" ? "LOG IN" : "SIGN UP"}
+
+          {showForgot ? (
+            forgotSent ? (
+              <>
+                <h2 className="serif text-xl mb-3" style={{ color: T.ink }}>Check your email</h2>
+                <p className="text-xs mb-5" style={{ color: T.muted }}>
+                  If an account exists for <strong style={{ color: T.ink }}>{forgotEmail}</strong>, we've sent a link to
+                  reset your password.
+                </p>
+                <button
+                  onClick={() => { setShowForgot(false); setForgotSent(false); setForgotEmail(""); }}
+                  className="w-full py-2.5 text-xs tracking-widest font-semibold"
+                  style={{ background: T.accent, color: T.accentInk }}
+                >
+                  BACK TO LOG IN
+                </button>
+              </>
+            ) : (
+              <form onSubmit={handleForgotPassword}>
+                <h2 className="serif text-xl mb-3" style={{ color: T.ink }}>Reset your password</h2>
+                <p className="text-xs mb-4" style={{ color: T.muted }}>
+                  Enter your email and we'll send you a link to set a new password.
+                </p>
+                <label className="text-[10px] tracking-widest block mb-1" style={{ color: T.muted }}>EMAIL</label>
+                <input type="email" required value={forgotEmail} onChange={(e) => setForgotEmail(e.target.value)}
+                  className="w-full border px-2 py-1.5 text-xs bg-transparent" style={inputStyle} />
+                {forgotError && <div className="text-[11px] mt-3" style={{ color: T.danger }}>{forgotError}</div>}
+                <button type="submit" disabled={forgotBusy} className="w-full py-2.5 text-xs tracking-widest mt-5 font-semibold" style={{ background: T.accent, color: T.accentInk }}>
+                  {forgotBusy ? "…" : "SEND RESET LINK"}
+                </button>
+                <button type="button" onClick={() => { setShowForgot(false); setForgotError(""); }} className="w-full text-[11px] underline mt-4" style={{ color: T.muted }}>
+                  back to log in
+                </button>
+              </form>
+            )
+          ) : (
+            <form onSubmit={handleAuth}>
+              <div className="flex gap-1 mb-4">
+                {["login", "signup"].map((m) => (
+                  <button type="button" key={m} onClick={() => { setAuthMode(m); setAuthError(""); }}
+                    className="flex-1 text-xs py-2 border" style={{ borderColor: T.border, background: authMode === m ? T.accent : "transparent", color: authMode === m ? T.accentInk : T.ink }}>
+                    {m === "login" ? "LOG IN" : "SIGN UP"}
+                  </button>
+                ))}
+              </div>
+              <div className="space-y-3">
+                <div>
+                  <label className="text-[10px] tracking-widest block mb-1" style={{ color: T.muted }}>EMAIL</label>
+                  <input type="email" required value={authForm.email} onChange={(e) => setAuthForm({ ...authForm, email: e.target.value })}
+                    className="w-full border px-2 py-1.5 text-xs bg-transparent" style={inputStyle} />
+                </div>
+                <div>
+                  <label className="text-[10px] tracking-widest block mb-1" style={{ color: T.muted }}>PASSWORD</label>
+                  <input type="password" required minLength={6} value={authForm.password} onChange={(e) => setAuthForm({ ...authForm, password: e.target.value })}
+                    className="w-full border px-2 py-1.5 text-xs bg-transparent" style={inputStyle} />
+                </div>
+              </div>
+              {authMode === "login" && (
+                <button type="button" onClick={() => { setShowForgot(true); setForgotEmail(authForm.email); }} className="text-[11px] underline mt-2" style={{ color: T.muted }}>
+                  forgot password?
+                </button>
+              )}
+              {authError && <div className="text-[11px] mt-3" style={{ color: T.danger }}>{authError}</div>}
+              <button type="submit" disabled={authBusy} className="w-full py-2.5 text-xs tracking-widest mt-5 font-semibold" style={{ background: T.accent, color: T.accentInk }}>
+                {authBusy ? "…" : authMode === "login" ? "LOG IN" : "CREATE ACCOUNT"}
               </button>
-            ))}
-          </div>
-          <div className="space-y-3">
-            <div>
-              <label className="text-[10px] tracking-widest block mb-1" style={{ color: T.muted }}>EMAIL</label>
-              <input type="email" required value={authForm.email} onChange={(e) => setAuthForm({ ...authForm, email: e.target.value })}
-                className="w-full border px-2 py-1.5 text-xs bg-transparent" style={inputStyle} />
-            </div>
-            <div>
-              <label className="text-[10px] tracking-widest block mb-1" style={{ color: T.muted }}>PASSWORD</label>
-              <input type="password" required minLength={6} value={authForm.password} onChange={(e) => setAuthForm({ ...authForm, password: e.target.value })}
-                className="w-full border px-2 py-1.5 text-xs bg-transparent" style={inputStyle} />
-            </div>
-          </div>
-          {authError && <div className="text-[11px] mt-3" style={{ color: T.danger }}>{authError}</div>}
-          <button type="submit" disabled={authBusy} className="w-full py-2.5 text-xs tracking-widest mt-5 font-semibold" style={{ background: T.accent, color: T.accentInk }}>
-            {authBusy ? "…" : authMode === "login" ? "LOG IN" : "CREATE ACCOUNT"}
-          </button>
-          {authMode === "signup" && (
-            <div className="text-[10px] mt-4" style={{ color: T.faint }}>
-              New accounts need admin approval before they can see club finances. You'll be able to log in once approved.
-            </div>
+              {authMode === "signup" && (
+                <div className="text-[10px] mt-4" style={{ color: T.faint }}>
+                  New accounts need admin approval before they can see club finances. You'll be able to log in once approved.
+                </div>
+              )}
+            </form>
           )}
-        </form>
+        </div>
 
         {showConfirmModal && (
           <div className="fixed inset-0 flex items-center justify-center px-6 z-10" style={{ background: "rgba(6,10,20,0.75)" }}>
