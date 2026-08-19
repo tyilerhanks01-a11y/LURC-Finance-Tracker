@@ -23,6 +23,7 @@ export default function App() {
   const [totalBudget, setTotalBudget] = useState(1500);
   const [pendingUsers, setPendingUsers] = useState([]);
   const [allProfiles, setAllProfiles] = useState([]);
+  const [activityLog, setActivityLog] = useState([]);
 
   const [tab, setTab] = useState("dashboard");
   const [form, setForm] = useState({
@@ -69,8 +70,9 @@ export default function App() {
     if (!isApproved) return;
     loadData();
     if (isAdmin) loadProfiles();
+    if (isSuperAdmin) loadActivityLog();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isApproved, isAdmin]);
+  }, [isApproved, isAdmin, isSuperAdmin]);
 
   const loadData = async () => {
     const { data: cats } = await supabase.from("categories").select("*").order("created_at");
@@ -86,6 +88,11 @@ export default function App() {
     const { data } = await supabase.from("profiles").select("*").order("created_at");
     setAllProfiles(data || []);
     setPendingUsers((data || []).filter((p) => p.role === "pending"));
+  };
+
+  const loadActivityLog = async () => {
+    const { data } = await supabase.from("activity_log").select("*").order("created_at", { ascending: false }).limit(200);
+    setActivityLog(data || []);
   };
 
   // --- Auth actions ---
@@ -486,7 +493,7 @@ export default function App() {
         )}
 
         {tab === "admin" && isAdmin && (
-          <section className="max-w-md">
+          <section className="max-w-2xl">
             <h2 className="serif text-xl font-semibold mb-1">Admin &middot; access control</h2>
             <p className="text-[11px] mb-4" style={{ color: "#6b6350" }}>
               New signups start as "pending" and can't see any data until approved here.
@@ -545,6 +552,32 @@ export default function App() {
                 );
               })}
             </div>
+
+            {isSuperAdmin && (
+              <div className="mt-8">
+                <div className="text-[10px] tracking-widest mb-2" style={{ color: "#6b6350" }}>ACTIVITY LOG</div>
+                <p className="text-[11px] mb-2" style={{ color: "#6b6350" }}>
+                  Every transaction/category change and every keep-alive ping to Supabase, most recent first. Only visible to super admins.
+                </p>
+                <div className="border-2 max-h-96 overflow-y-auto" style={{ borderColor: "#1c2a44", background: "#faf7ee" }}>
+                  {activityLog.length === 0 ? (
+                    <div className="p-6 text-center text-xs" style={{ color: "#6b6350" }}>No activity recorded yet.</div>
+                  ) : (
+                    activityLog.map((l, i) => (
+                      <div key={l.id} className="px-4 py-2 text-[11px]" style={{ borderBottom: i < activityLog.length - 1 ? "1px solid #e7ddc8" : "none" }}>
+                        <div className="flex items-start justify-between gap-3">
+                          <span>{l.summary}</span>
+                          <span className="shrink-0 whitespace-nowrap" style={{ color: "#6b6350" }}>{new Date(l.created_at).toLocaleString()}</span>
+                        </div>
+                        <div style={{ color: l.action === "ping" ? "#7a5c99" : "#6b6350" }}>
+                          {l.action === "ping" ? "automated · keep-alive ping" : l.actor_email || "unknown user"}
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
           </section>
         )}
       </main>
