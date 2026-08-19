@@ -112,6 +112,10 @@ export default function PrivacyPolicy() {
           </p>
         </Section>
       </main>
+
+      <footer className="border-t-2 px-6 sm:px-10 py-6 text-center text-[10px] tracking-wide" style={{ borderColor: "#1c2a44", color: "#8a8270" }}>
+        Site built and run by Tyiler Hanks &middot; v{__APP_VERSION__}
+      </footer>
     </div>
   );
 }
