@@ -58,8 +58,11 @@ export default function App() {
     })();
   }, [session]);
 
-  const isApproved = profile && (profile.role === "viewer" || profile.role === "admin");
-  const isAdmin = profile && profile.role === "admin";
+  const isApproved = profile && ["normal", "viewer", "admin", "super_admin"].includes(profile.role);
+  const isEditor = profile && ["normal", "admin", "super_admin"].includes(profile.role);
+  const isAdmin = profile && ["admin", "super_admin"].includes(profile.role);
+  const isSuperAdmin = profile && profile.role === "super_admin";
+  const roleLabel = (r) => r.replace("_", " ").toUpperCase();
 
   // --- Load app data once approved ---
   useEffect(() => {
@@ -90,8 +93,10 @@ export default function App() {
     e.preventDefault();
     setAuthError("");
     setAuthBusy(true);
-    const fn = authMode === "login" ? supabase.auth.signInWithPassword : supabase.auth.signUp;
-    const { error } = await fn({ email: authForm.email, password: authForm.password });
+    const { error } =
+      authMode === "login"
+        ? await supabase.auth.signInWithPassword({ email: authForm.email, password: authForm.password })
+        : await supabase.auth.signUp({ email: authForm.email, password: authForm.password });
     setAuthBusy(false);
     if (error) setAuthError(error.message);
   };
@@ -163,6 +168,12 @@ export default function App() {
   // --- Admin ---
   const setRole = async (id, role) => {
     await supabase.from("profiles").update({ role }).eq("id", id);
+    loadProfiles();
+  };
+
+  const deleteProfile = async (id) => {
+    if (!window.confirm("Permanently delete this user's profile? This cannot be undone.")) return;
+    await supabase.from("profiles").delete().eq("id", id);
     loadProfiles();
   };
 
@@ -240,14 +251,19 @@ export default function App() {
     );
   }
 
-  // Logged in but not yet approved
+  // Logged in but not yet approved (or revoked / profile deleted)
   if (!isApproved) {
+    const revoked = !profile || profile.role === "removed";
     return (
       <Centered>
         <div className="w-full max-w-sm border-2 p-8 text-center" style={{ borderColor: "#1c2a44", background: "#faf7ee" }}>
-          <h1 className="serif text-2xl font-semibold mb-3" style={{ color: "#1c2a44" }}>Awaiting approval</h1>
+          <h1 className="serif text-2xl font-semibold mb-3" style={{ color: "#1c2a44" }}>
+            {revoked ? "Access unavailable" : "Awaiting approval"}
+          </h1>
           <p className="text-xs mb-5" style={{ color: "#6b6350" }}>
-            Your account ({session.user.email}) is registered but hasn't been approved by a club admin yet. Ask the treasurer to approve you from the Admin tab.
+            {revoked
+              ? `Your account (${session.user.email}) doesn't currently have access to the club ledger. Contact an admin if you think this is a mistake.`
+              : `Your account (${session.user.email}) is registered but hasn't been approved by a club admin yet. Ask the treasurer to approve you from the Admin tab.`}
           </p>
           <button onClick={logout} className="text-[11px] underline" style={{ color: "#a13d2f" }}>log out</button>
         </div>
@@ -255,7 +271,7 @@ export default function App() {
     );
   }
 
-  const tabs = isAdmin ? ["dashboard", "add", "budget", "admin"] : ["dashboard", "add", "budget"];
+  const tabs = ["dashboard", ...(isEditor ? ["add"] : []), "budget", ...(isAdmin ? ["admin"] : [])];
 
   return (
     <div className="min-h-screen w-full" style={{ background: "#f2ede1", backgroundImage: "repeating-linear-gradient(0deg, transparent, transparent 27px, rgba(28,42,68,0.045) 28px)", color: "#1c2a44" }}>
@@ -266,7 +282,7 @@ export default function App() {
             <h1 className="serif text-4xl sm:text-5xl font-semibold mt-1">The Ledger</h1>
           </div>
           <div className="text-right">
-            <div className="text-[10px] tracking-widest" style={{ color: "#6b6350" }}>{profile.email} &middot; {profile.role.toUpperCase()}</div>
+            <div className="text-[10px] tracking-widest" style={{ color: "#6b6350" }}>{profile.email} &middot; {roleLabel(profile.role)}</div>
             <button onClick={logout} className="text-[10px] underline mt-1" style={{ color: "#a13d2f" }}>log out</button>
           </div>
         </div>
@@ -418,7 +434,7 @@ export default function App() {
           <section className="max-w-md">
             <div className="flex items-center justify-between mb-4">
               <h2 className="serif text-xl font-semibold">Budget & categories</h2>
-              {!editingBudget && <button onClick={openBudgetEditor} className="text-[10px] px-3 py-1.5 border" style={{ borderColor: "#1c2a44" }}>EDIT</button>}
+              {isEditor && !editingBudget && <button onClick={openBudgetEditor} className="text-[10px] px-3 py-1.5 border" style={{ borderColor: "#1c2a44" }}>EDIT</button>}
             </div>
             {!editingBudget ? (
               <div className="border-2" style={{ borderColor: "#1c2a44", background: "#faf7ee" }}>
@@ -481,11 +497,17 @@ export default function App() {
                 <div className="text-[10px] tracking-widest mb-2" style={{ color: "#a13d2f" }}>PENDING APPROVAL</div>
                 <div className="border-2 mb-5" style={{ borderColor: "#a13d2f", background: "#faf7ee" }}>
                   {pendingUsers.map((u, i) => (
-                    <div key={u.id} className="px-4 py-3 flex items-center justify-between text-xs" style={{ borderBottom: i < pendingUsers.length - 1 ? "1px solid #e7ddc8" : "none" }}>
+                    <div key={u.id} className="px-4 py-3 flex items-center justify-between text-xs flex-wrap gap-2" style={{ borderBottom: i < pendingUsers.length - 1 ? "1px solid #e7ddc8" : "none" }}>
                       <span>{u.email}</span>
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 flex-wrap justify-end">
+                        <button onClick={() => setRole(u.id, "normal")} className="px-2 py-1 border text-[10px]" style={{ borderColor: "#6b6350", color: "#6b6350" }}>APPROVE (NORMAL)</button>
                         <button onClick={() => setRole(u.id, "viewer")} className="px-2 py-1 border text-[10px]" style={{ borderColor: "#5c6b4a", color: "#5c6b4a" }}>APPROVE (VIEWER)</button>
-                        <button onClick={() => setRole(u.id, "admin")} className="px-2 py-1 border text-[10px]" style={{ borderColor: "#1c2a44" }}>APPROVE (ADMIN)</button>
+                        {isSuperAdmin && (
+                          <>
+                            <button onClick={() => setRole(u.id, "admin")} className="px-2 py-1 border text-[10px]" style={{ borderColor: "#1c2a44" }}>APPROVE (ADMIN)</button>
+                            <button onClick={() => setRole(u.id, "super_admin")} className="px-2 py-1 border text-[10px]" style={{ borderColor: "#7a5c99", color: "#7a5c99" }}>APPROVE (SUPER ADMIN)</button>
+                          </>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -494,25 +516,34 @@ export default function App() {
             )}
 
             <div className="text-[10px] tracking-widest mb-2" style={{ color: "#6b6350" }}>ALL MEMBERS</div>
+            <p className="text-[11px] mb-2" style={{ color: "#6b6350" }}>
+              {isSuperAdmin
+                ? "As a super admin you can promote, demote, revoke, or permanently delete any profile except your own."
+                : "Admins manage normal/viewer members. Only a super admin can manage other admins."}
+            </p>
             <div className="border-2" style={{ borderColor: "#1c2a44", background: "#faf7ee" }}>
-              {allProfiles.filter((p) => p.role !== "pending").map((u, i, arr) => (
-                <div key={u.id} className="px-4 py-3 flex items-center justify-between text-xs" style={{ borderBottom: i < arr.length - 1 ? "1px solid #e7ddc8" : "none" }}>
-                  <div>
-                    <div>{u.email}</div>
-                    <div className="text-[10px]" style={{ color: "#6b6350" }}>{u.role}</div>
-                  </div>
-                  {u.id !== profile.id && (
-                    <div className="flex gap-2">
-                      {u.role === "viewer" ? (
-                        <button onClick={() => setRole(u.id, "admin")} className="text-[10px] underline" style={{ color: "#1c2a44" }}>make admin</button>
-                      ) : (
-                        <button onClick={() => setRole(u.id, "viewer")} className="text-[10px] underline" style={{ color: "#1c2a44" }}>make viewer</button>
-                      )}
-                      <button onClick={() => setRole(u.id, "removed")} className="text-[10px] underline" style={{ color: "#a13d2f" }}>revoke access</button>
+              {allProfiles.filter((p) => p.role !== "pending").map((u, i, arr) => {
+                const targetIsElevated = u.role === "admin" || u.role === "super_admin";
+                const canManage = u.id !== profile.id && (isSuperAdmin || (isAdmin && !targetIsElevated));
+                return (
+                  <div key={u.id} className="px-4 py-3 flex items-center justify-between text-xs flex-wrap gap-2" style={{ borderBottom: i < arr.length - 1 ? "1px solid #e7ddc8" : "none" }}>
+                    <div>
+                      <div>{u.email}</div>
+                      <div className="text-[10px]" style={{ color: "#6b6350" }}>{roleLabel(u.role)}</div>
                     </div>
-                  )}
-                </div>
-              ))}
+                    {canManage && (
+                      <div className="flex gap-2 flex-wrap justify-end">
+                        {u.role !== "normal" && <button onClick={() => setRole(u.id, "normal")} className="text-[10px] underline" style={{ color: "#1c2a44" }}>make normal</button>}
+                        {u.role !== "viewer" && <button onClick={() => setRole(u.id, "viewer")} className="text-[10px] underline" style={{ color: "#1c2a44" }}>make viewer</button>}
+                        {isSuperAdmin && u.role !== "admin" && <button onClick={() => setRole(u.id, "admin")} className="text-[10px] underline" style={{ color: "#1c2a44" }}>make admin</button>}
+                        {isSuperAdmin && u.role !== "super_admin" && <button onClick={() => setRole(u.id, "super_admin")} className="text-[10px] underline" style={{ color: "#7a5c99" }}>make super admin</button>}
+                        {u.role !== "removed" && <button onClick={() => setRole(u.id, "removed")} className="text-[10px] underline" style={{ color: "#a13d2f" }}>revoke access</button>}
+                        {isSuperAdmin && <button onClick={() => deleteProfile(u.id)} className="text-[10px] underline" style={{ color: "#a13d2f" }}>delete profile</button>}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </section>
         )}
