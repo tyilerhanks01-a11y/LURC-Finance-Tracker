@@ -116,7 +116,7 @@ export default function PrivacyPolicy() {
         <Section title="Contact">
           <p>
             Questions about this policy or your data: contact the UoL Riding Club committee at{" "}
-            <span className="underline">[club contact email — add yours here]</span>.
+            <a className="underline" href="mailto:sgthanks@liverpool.ac.uk">sgthanks@liverpool.ac.uk</a>.
           </p>
         </Section>
       </main>
