@@ -19,6 +19,10 @@ export default function App() {
   const [authForm, setAuthForm] = useState({ email: "", password: "" });
   const [authError, setAuthError] = useState("");
   const [authBusy, setAuthBusy] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const [resendBusy, setResendBusy] = useState(false);
+  const [resendMessage, setResendMessage] = useState("");
 
   const [categories, setCategories] = useState([]);
   const [transactions, setTransactions] = useState([]);
@@ -111,7 +115,36 @@ export default function App() {
             options: { emailRedirectTo: `${window.location.origin}/confirmed` },
           });
     setAuthBusy(false);
-    if (error) setAuthError(error.message);
+    if (error) {
+      setAuthError(error.message);
+    } else if (authMode === "signup") {
+      setResendMessage("");
+      setResendCooldown(30);
+      setShowConfirmModal(true);
+    }
+  };
+
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const timer = setTimeout(() => setResendCooldown((s) => s - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [resendCooldown]);
+
+  const resendConfirmation = async () => {
+    setResendBusy(true);
+    setResendMessage("");
+    const { error } = await supabase.auth.resend({
+      type: "signup",
+      email: authForm.email,
+      options: { emailRedirectTo: `${window.location.origin}/confirmed` },
+    });
+    setResendBusy(false);
+    if (error) {
+      setResendMessage(error.message);
+    } else {
+      setResendMessage("Confirmation email resent.");
+      setResendCooldown(30);
+    }
   };
 
   const logout = async () => {
@@ -268,6 +301,34 @@ export default function App() {
             </div>
           )}
         </form>
+
+        {showConfirmModal && (
+          <div className="fixed inset-0 flex items-center justify-center px-6 z-10" style={{ background: "rgba(28,42,68,0.6)" }}>
+            <div className="w-full max-w-sm border-2 p-8 text-center" style={{ borderColor: "#1c2a44", background: "#faf7ee" }}>
+              <h2 className="serif text-2xl font-semibold mb-3" style={{ color: "#1c2a44" }}>Check your email</h2>
+              <p className="text-xs mb-5" style={{ color: "#6b6350" }}>
+                We've sent a confirmation link to <strong>{authForm.email}</strong>. Click it to activate your
+                account &mdash; you'll then need committee approval before you can see club finances.
+              </p>
+              <button
+                onClick={resendConfirmation}
+                disabled={resendCooldown > 0 || resendBusy}
+                className="w-full py-2.5 text-xs tracking-widest border disabled:opacity-50"
+                style={{ borderColor: "#1c2a44", color: "#1c2a44" }}
+              >
+                {resendBusy ? "…" : resendCooldown > 0 ? `RESEND EMAIL (${resendCooldown}s)` : "RESEND EMAIL"}
+              </button>
+              {resendMessage && <div className="text-[11px] mt-3" style={{ color: "#6b6350" }}>{resendMessage}</div>}
+              <button
+                onClick={() => setShowConfirmModal(false)}
+                className="w-full py-2.5 text-xs tracking-widest mt-3"
+                style={{ background: "#1c2a44", color: "#f2ede1" }}
+              >
+                GOT IT
+              </button>
+            </div>
+          </div>
+        )}
       </Centered>
     );
   }
