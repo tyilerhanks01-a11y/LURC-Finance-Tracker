@@ -12,6 +12,7 @@ Code is complete and untested end-to-end (never run `npm install` / `npm run dev
 - `src/supabaseClient.js` — reads Supabase URL/key from env vars.
 - `supabase-schema.sql` — full DB schema: `profiles`, `categories`, `transactions`, `settings` tables, RLS policies, a trigger that auto-creates a `pending` profile on signup, and the club's category budgets pre-seeded (Toll Costs £450, Lesson Subsidies £300, Competition Food £200, Venue Hire £150, Petrol/Mileage £200, Events & Social £100, Other £100; total £1500). Use this for a brand-new project.
 - `supabase-migration-roles.sql` — one-time migration that adds the `normal`/`super_admin` roles to a project that was already set up from an earlier version of `supabase-schema.sql`.
+- `supabase-migration-keepalive.sql` — one-time migration adding a `keep_alive_ping()` RPC so the GitHub Actions ping (below) can prove real connectivity without needing anon read access to `settings`.
 - `.github/workflows/keep-alive.yml` — weekly ping to stop Supabase's free-tier 7-day inactivity pause. Needs `SUPABASE_URL` and `SUPABASE_ANON_KEY` added as GitHub repo secrets before it'll work.
 
 ### Roles

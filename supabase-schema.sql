@@ -86,6 +86,15 @@ returns boolean as $$
   );
 $$ language sql security definer;
 
+-- Health-check RPC for the GitHub Actions keep-alive ping — returns a constant,
+-- no real data, so it's safe to expose to the anon key without touching RLS
+-- on any table that actually holds club finances.
+create function keep_alive_ping()
+returns text as $$
+  select 'ok'::text;
+$$ language sql security definer;
+grant execute on function keep_alive_ping() to anon;
+
 -- Enable RLS everywhere
 alter table profiles enable row level security;
 alter table categories enable row level security;
