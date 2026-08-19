@@ -3,12 +3,14 @@
 @tailwind utilities;
 
 body {
-  font-family: "Courier Prime", "Courier New", monospace;
+  font-family: "Archivo", "Helvetica Neue", Arial, sans-serif;
 }
 .serif {
-  font-family: "Fraunces", serif;
+  font-family: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  font-weight: 900;
+  letter-spacing: -0.01em;
 }
 ::selection {
   background: #c99a3e;
-  color: #1c2a44;
+  color: #12203f;
 }

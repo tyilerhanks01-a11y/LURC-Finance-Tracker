@@ -42,4 +42,4 @@ New signups start `pending`. An `admin` can approve them as `viewer` (read-only)
 
 ## Design notes
 
-Styling follows a "stable ledger" theme: navy (#1c2a44) on parchment (#f2ede1), Fraunces serif for headings, monospace for numbers/labels — matches an earlier Claude-built artifact version of this same tracker, don't restyle unless asked.
+Styling matches the LURC crest branding: deep navy background, gold (#c99a3e) accent used sparingly for kickers/primary actions, white/parchment text, bold Archivo for headings and body. Tokens live in `src/theme.js` — change colors there rather than hardcoding hex values in components. `email-templates/confirm-signup.html` mirrors the same palette but with web-safe font fallbacks (email clients ignore custom fonts). Don't restyle unless asked.

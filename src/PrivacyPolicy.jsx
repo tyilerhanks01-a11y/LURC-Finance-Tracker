@@ -1,27 +1,28 @@
 import React from "react";
+import { T } from "./theme";
 
 // Bump this whenever the wording below materially changes.
 const LAST_UPDATED = "19 August 2026";
 
-const muted = { color: "#6b6350" };
+const muted = { color: T.muted };
 
 function Section({ title, children }) {
   return (
     <section className="mb-8">
-      <h2 className="serif text-xl font-semibold mb-2" style={{ color: "#1c2a44" }}>{title}</h2>
-      <div className="text-xs leading-relaxed space-y-2" style={{ color: "#3d3626" }}>{children}</div>
+      <h2 className="serif text-xl mb-2" style={{ color: T.ink }}>{title}</h2>
+      <div className="text-xs leading-relaxed space-y-2" style={{ color: T.muted }}>{children}</div>
     </section>
   );
 }
 
 export default function PrivacyPolicy() {
   return (
-    <div className="min-h-screen w-full" style={{ background: "#f2ede1", backgroundImage: "repeating-linear-gradient(0deg, transparent, transparent 27px, rgba(28,42,68,0.045) 28px)", color: "#1c2a44" }}>
-      <header className="border-b-2 px-6 pt-10 pb-6 sm:px-10" style={{ borderColor: "#1c2a44" }}>
+    <div className="min-h-screen w-full" style={{ background: T.bg, backgroundImage: "repeating-linear-gradient(0deg, transparent, transparent 27px, rgba(242,237,225,0.03) 28px)", color: T.ink }}>
+      <header className="border-b-2 px-6 pt-10 pb-6 sm:px-10" style={{ borderColor: T.border }}>
         <div className="max-w-3xl mx-auto">
           <a href="/" className="text-[10px] tracking-widest underline" style={muted}>&larr; BACK TO THE LEDGER</a>
-          <div className="text-xs tracking-[0.25em] mt-3" style={muted}>UNIVERSITY OF LIVERPOOL &middot; RIDING CLUB</div>
-          <h1 className="serif text-4xl font-semibold mt-1">Privacy &amp; Data Use Policy</h1>
+          <div className="text-xs tracking-[0.25em] mt-3 font-semibold" style={{ color: T.accent }}>UNIVERSITY OF LIVERPOOL &middot; RIDING CLUB</div>
+          <h1 className="serif text-4xl mt-1" style={{ color: T.ink }}>Privacy &amp; Data Use Policy</h1>
           <div className="text-[11px] mt-2" style={muted}>Last updated {LAST_UPDATED}</div>
         </div>
       </header>
@@ -113,7 +114,7 @@ export default function PrivacyPolicy() {
         </Section>
       </main>
 
-      <footer className="border-t-2 px-6 sm:px-10 py-6 text-center text-[10px] tracking-wide" style={{ borderColor: "#1c2a44", color: "#8a8270" }}>
+      <footer className="border-t-2 px-6 sm:px-10 py-6 text-center text-[10px] tracking-wide" style={{ borderColor: T.border, color: T.faint }}>
         Site built and run by Tyiler Hanks &middot; v{__APP_VERSION__}
       </footer>
     </div>
