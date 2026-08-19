@@ -15,25 +15,20 @@ body {
   color: #12203f;
 }
 
-/* Galloping horse: whole figure bobs, legs alternate between two poses in place */
-@keyframes horse-bob {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-7px); }
+/* Four-beat gallop stride, bouncing in place (no horizontal drift) */
+@keyframes gallop {
+  0%   { transform: translateY(0) scaleX(1) scaleY(1); }
+  12%  { transform: translateY(-13px) scaleX(0.96) scaleY(1.05); }
+  25%  { transform: translateY(-2px) scaleX(1.04) scaleY(0.95); }
+  37%  { transform: translateY(-15px) scaleX(0.96) scaleY(1.05); }
+  50%  { transform: translateY(0) scaleX(1.05) scaleY(0.93); }
+  62%  { transform: translateY(-9px) scaleX(0.98) scaleY(1.03); }
+  75%  { transform: translateY(0) scaleX(1.03) scaleY(0.96); }
+  87%  { transform: translateY(-4px); }
+  100% { transform: translateY(0) scaleX(1) scaleY(1); }
 }
-@keyframes horse-legs-a {
-  0%, 49% { opacity: 1; }
-  50%, 100% { opacity: 0; }
-}
-@keyframes horse-legs-b {
-  0%, 49% { opacity: 0; }
-  50%, 100% { opacity: 1; }
-}
-.horse-gallop {
-  animation: horse-bob 0.5s ease-in-out infinite;
-}
-.horse-legs-a {
-  animation: horse-legs-a 0.5s steps(1) infinite;
-}
-.horse-legs-b {
-  animation: horse-legs-b 0.5s steps(1) infinite;
+.gallop {
+  display: inline-block;
+  transform-origin: bottom center;
+  animation: gallop 0.7s ease-in-out infinite;
 }

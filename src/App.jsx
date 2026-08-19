@@ -747,66 +747,11 @@ function Footer() {
   );
 }
 
-function GallopingHorse() {
-  return (
-    <svg viewBox="0 0 300 220" width="120" className="horse-gallop" aria-hidden="true">
-      <g fill={T.ink}>
-        <path d="
-          M 262,100
-          C 262,90 262,80 264,72
-          C 268,66 274,62 276,58
-          C 270,55 264,54 258,54
-          C 254,50 248,44 240,40
-          C 236,38 232,38 228,40
-          C 226,46 226,54 228,62
-          C 222,60 202,64 182,64
-          C 168,64 152,66 138,70
-          C 118,76 98,80 80,84
-          C 68,86 58,90 52,98
-          C 62,96 74,94 86,96
-          C 78,104 72,114 70,124
-          C 82,118 92,110 100,102
-          C 116,106 134,108 152,108
-          C 168,108 182,106 196,102
-          C 200,112 202,122 200,132
-          C 210,126 216,116 218,106
-          C 226,104 234,102 240,100
-          C 246,106 254,104 256,102
-          C 258,102 260,100 262,100 Z
-        " />
-        <path d="M 233,42 L 231,31 L 239,39 Z" />
-        <path d="M 226,46 L 219,36 L 225,45 L 221,32 L 229,42 Z" />
-        <path d="
-          M 52,88
-          C 40,82 26,82 14,88
-          C 24,90 32,94 24,98
-          C 34,98 40,102 32,108
-          C 42,106 48,110 42,116
-          C 52,112 60,104 62,94
-          C 58,90 55,89 52,88 Z
-        " />
-      </g>
-      <g fill={T.ink} className="horse-legs-a">
-        <path d="M 200,100 L 208,124 L 222,136 L 216,142 L 200,130 L 192,106 Z" />
-        <path d="M 222,136 L 232,146 L 228,154 L 216,144 Z" />
-        <path d="M 96,96 L 88,116 L 96,136 L 88,142 L 78,120 L 84,98 Z" />
-        <path d="M 96,136 L 92,152 L 82,154 L 84,140 Z" />
-      </g>
-      <g fill={T.ink} className="horse-legs-b">
-        <path d="M 200,100 L 204,112 L 198,122 L 190,118 L 194,106 L 196,100 Z" />
-        <path d="M 198,122 L 204,128 L 198,132 L 192,126 Z" />
-        <path d="M 96,96 L 82,108 L 66,122 L 58,130 L 70,112 L 88,98 Z" />
-        <path d="M 66,122 L 56,132 L 48,128 L 60,116 Z" />
-      </g>
-    </svg>
-  );
-}
-
 function LoginSuccessOverlay() {
   return (
     <div className="min-h-screen w-full flex items-center justify-center px-6" style={{ background: T.bg }}>
       <div className="w-full max-w-xs border-2 p-8 text-center" style={{ borderColor: T.border, background: T.panel }}>
-        <div className="flex justify-center mb-2"><GallopingHorse /></div>
+        <div className="text-5xl" aria-hidden="true"><span className="gallop">🐎</span></div>
         <div className="h-px mt-2 mb-4" style={{ background: T.hairline }} />
         <h2 className="serif text-xl mb-1" style={{ color: T.ink }}>Login successful</h2>
         <p className="text-xs" style={{ color: T.muted }}>Redirecting&hellip;</p>
