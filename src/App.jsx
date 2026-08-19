@@ -727,12 +727,7 @@ export default function App() {
     );
   }
 
-  return (
-    <>
-      {content}
-      {showLoginSuccess && <LoginSuccessOverlay />}
-    </>
-  );
+  return showLoginSuccess ? <LoginSuccessOverlay /> : content;
 }
 
 function Centered({ children }) {
@@ -754,9 +749,9 @@ function Footer() {
 
 function LoginSuccessOverlay() {
   return (
-    <div className="fixed inset-0 flex items-center justify-center px-6 z-20" style={{ background: "rgba(6,10,20,0.75)" }}>
-      <div className="w-full max-w-xs border-2 p-8 text-center overflow-hidden" style={{ borderColor: T.border, background: T.panel }}>
-        <div className="text-5xl gallop" aria-hidden="true">🐎</div>
+    <div className="min-h-screen w-full flex items-center justify-center px-6" style={{ background: T.bg }}>
+      <div className="w-full max-w-xs border-2 p-8 text-center" style={{ borderColor: T.border, background: T.panel }}>
+        <div className="text-5xl" aria-hidden="true"><span className="gallop">🐎</span></div>
         <div className="h-px mt-2 mb-4" style={{ background: T.hairline }} />
         <h2 className="serif text-xl mb-1" style={{ color: T.ink }}>Login successful</h2>
         <p className="text-xs" style={{ color: T.muted }}>Redirecting&hellip;</p>

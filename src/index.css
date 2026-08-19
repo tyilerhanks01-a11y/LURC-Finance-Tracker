@@ -15,17 +15,20 @@ body {
   color: #12203f;
 }
 
+/* Four-beat gallop stride, bouncing in place (no horizontal drift) */
 @keyframes gallop {
-  0% { transform: translate(-10px, 0); }
-  15% { transform: translate(-4px, -12px); }
-  30% { transform: translate(2px, 0); }
-  45% { transform: translate(8px, -8px); }
-  60% { transform: translate(14px, 0); }
-  75% { transform: translate(8px, -12px); }
-  90% { transform: translate(0px, 0); }
-  100% { transform: translate(-10px, 0); }
+  0%   { transform: translateY(0) scaleX(1) scaleY(1); }
+  12%  { transform: translateY(-13px) scaleX(0.96) scaleY(1.05); }
+  25%  { transform: translateY(-2px) scaleX(1.04) scaleY(0.95); }
+  37%  { transform: translateY(-15px) scaleX(0.96) scaleY(1.05); }
+  50%  { transform: translateY(0) scaleX(1.05) scaleY(0.93); }
+  62%  { transform: translateY(-9px) scaleX(0.98) scaleY(1.03); }
+  75%  { transform: translateY(0) scaleX(1.03) scaleY(0.96); }
+  87%  { transform: translateY(-4px); }
+  100% { transform: translateY(0) scaleX(1) scaleY(1); }
 }
 .gallop {
   display: inline-block;
-  animation: gallop 0.85s ease-in-out infinite;
+  transform-origin: bottom center;
+  animation: gallop 0.7s ease-in-out infinite;
 }
