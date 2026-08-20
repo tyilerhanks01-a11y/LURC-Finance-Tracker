@@ -39,6 +39,7 @@ begin
         'from', 'The Ledger <noreply@lurcfinance.com>',
         'to', to_jsonb(admin_emails),
         'subject', 'New signup awaiting approval — LURC Finance Tracker',
+        'text', 'New signup awaiting approval' || chr(10) || chr(10) || coalesce(new.email, 'Someone') || ' just signed up for The Ledger and needs approval before they can see club finances.' || chr(10) || chr(10) || 'Review it at https://lurcfinance.com',
         'html',
           '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#0f1c33;padding:32px 16px;">' ||
           '<tr><td align="center">' ||
