@@ -401,6 +401,7 @@ export default function App() {
               <p className="text-xs mb-5" style={{ color: T.muted }}>
                 We've sent a confirmation link to <strong style={{ color: T.ink }}>{authForm.email}</strong>. Click it to
                 activate your account &mdash; you'll then need committee approval before you can see club finances.
+                Check your spam/junk folder if you don't see it &mdash; it can sometimes end up there.
               </p>
               <button
                 onClick={resendConfirmation}
@@ -434,7 +435,7 @@ export default function App() {
           <p className="text-xs mb-5" style={{ color: T.muted }}>
             {revoked
               ? `Your account (${session.user.email}) doesn't currently have access to the club ledger. Contact an admin if you think this is a mistake.`
-              : `Your account (${session.user.email}) is registered but hasn't been approved by a club admin yet. Ask the treasurer to approve you from the Admin tab.`}
+              : `Your account (${session.user.email}) is registered but hasn't been approved by a club admin yet. You'll receive an email once you're approved — check your spam/junk folder if you don't see it. Ask the treasurer to approve you from the Admin tab.`}
           </p>
           <button onClick={logout} className="text-[11px] underline" style={{ color: T.danger }}>log out</button>
         </div>
