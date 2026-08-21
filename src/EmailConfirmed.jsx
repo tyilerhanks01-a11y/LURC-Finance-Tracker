@@ -22,7 +22,7 @@ export default function EmailConfirmed() {
         <h1 className="serif text-2xl mb-3" style={{ color: T.ink }}>Email confirmed</h1>
         <p className="text-xs mb-6" style={{ color: T.muted }}>
           Your email address has been confirmed. You'll be redirected to The Ledger in {secondsLeft}{" "}
-          second{secondsLeft === 1 ? "" : "s"} &mdash; your account will still need committee approval
+          second{secondsLeft === 1 ? "" : "s"}. Your account will still need treasurer approval
           before you can see club finances.
         </p>
         <button

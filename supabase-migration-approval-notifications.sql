@@ -33,7 +33,7 @@ begin
       body := jsonb_build_object(
         'from', 'The Ledger <noreply@lurcfinance.com>',
         'to', jsonb_build_array(new.email),
-        'subject', 'You have been approved — LURC Finance Tracker',
+        'subject', 'LURC Finance Tracker: You have been approved',
         'text', 'You have been approved' || chr(10) || chr(10) || 'Your account has been approved as ' || upper(replace(new.role, '_', ' ')) || '. You can now log in and see club finances.' || chr(10) || chr(10) || 'Log in at https://lurcfinance.com',
         'html',
           '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#0f1c33;padding:32px 16px;">' ||

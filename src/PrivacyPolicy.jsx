@@ -38,11 +38,11 @@ export default function PrivacyPolicy() {
 
         <Section title="What we collect">
           <ul className="list-disc pl-5 space-y-1">
-            <li><strong>Account data:</strong> your email address and password. Your password is handled entirely by our authentication provider (Supabase Auth) — we never see or store it in plain text.</li>
+            <li><strong>Account data:</strong> your email address and password. Your password is handled entirely by our authentication provider (Supabase Auth), and we never see or store it in plain text.</li>
             <li><strong>Membership status:</strong> your approval role (pending, viewer, normal member, admin, or super admin) and when your account was created.</li>
-            <li><strong>Financial records:</strong> transactions logged in the ledger — date, description, category, amount, who paid, and who logged the entry.</li>
+            <li><strong>Financial records:</strong> transactions logged in the ledger, including date, description, category, amount, who paid, and who logged the entry.</li>
             <li><strong>Budget data:</strong> category names and their budgets, and the club's total allocation.</li>
-            <li><strong>Activity log:</strong> visible only to super admins — a record of who added, edited, or deleted which transactions and categories, and when, plus timestamps of automated system health-check pings that keep the database active.</li>
+            <li><strong>Activity log:</strong> visible only to super admins. A record of who added, edited, or deleted which transactions and categories, and when, plus timestamps of automated system health-check pings that keep the database active.</li>
           </ul>
         </Section>
 
@@ -68,7 +68,7 @@ export default function PrivacyPolicy() {
           <p>
             Data is stored in a <a className="underline" href="https://supabase.com/privacy" target="_blank" rel="noreferrer">Supabase</a> database
             (authentication and Postgres), and the website itself is hosted on <a className="underline" href="https://vercel.com/legal/privacy-policy" target="_blank" rel="noreferrer">Vercel</a>.
-            Both act as data processors on the club's behalf — see their own privacy policies for how they
+            Both act as data processors on the club's behalf; see their own privacy policies for how they
             handle infrastructure-level data. We don't use any other third-party service to process your data.
           </p>
         </Section>
@@ -83,7 +83,7 @@ export default function PrivacyPolicy() {
         <Section title="How long we keep it">
           <p>
             Your data is kept for as long as your account is active or as long as needed for club accounting
-            records. If you'd like your profile removed, ask a super admin — they can permanently delete your
+            records. If you'd like your profile removed, ask a super admin, who can permanently delete your
             profile record. (Deleting your profile doesn't delete your login account itself; contact a super
             admin if you'd like that removed too.)
           </p>
@@ -101,7 +101,7 @@ export default function PrivacyPolicy() {
         <Section title="Changes to this policy">
           <p>
             This page is part of the app's own codebase, so it updates automatically the moment a change is
-            deployed — there's no separate document to keep in sync. The "last updated" date above reflects
+            deployed, and there's no separate document to keep in sync. The "last updated" date above reflects
             the most recent time the wording changed.
           </p>
         </Section>

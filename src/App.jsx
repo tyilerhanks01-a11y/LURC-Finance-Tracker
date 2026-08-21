@@ -400,8 +400,8 @@ export default function App() {
               <h2 className="serif text-2xl mb-3" style={{ color: T.ink }}>Check your email</h2>
               <p className="text-xs mb-5" style={{ color: T.muted }}>
                 We've sent a confirmation link to <strong style={{ color: T.ink }}>{authForm.email}</strong>. Click it to
-                activate your account &mdash; you'll then need committee approval before you can see club finances.
-                Check your spam/junk folder if you don't see it &mdash; it can sometimes end up there.
+                activate your account. You'll then need treasurer approval before you can see club finances.
+                Check your spam/junk folder if you don't see it, as it can sometimes end up there.
               </p>
               <button
                 onClick={resendConfirmation}
@@ -435,7 +435,7 @@ export default function App() {
           <p className="text-xs mb-5" style={{ color: T.muted }}>
             {revoked
               ? `Your account (${session.user.email}) doesn't currently have access to the club ledger. Contact an admin if you think this is a mistake.`
-              : `Your account (${session.user.email}) is registered but hasn't been approved by a club admin yet. You'll receive an email once you're approved — check your spam/junk folder if you don't see it. Ask the treasurer to approve you from the Admin tab.`}
+              : `Your account (${session.user.email}) is registered but hasn't been approved by a club admin yet. You'll receive an email once you're approved. Check your spam/junk folder if you don't see it. Ask the treasurer to approve you from the Admin tab.`}
           </p>
           <button onClick={logout} className="text-[11px] underline" style={{ color: T.danger }}>log out</button>
         </div>
@@ -494,7 +494,7 @@ export default function App() {
               </div>
               <div className="border-2" style={{ borderColor: T.border, background: T.panel }}>
                 {byCategory.length === 0 ? (
-                  <div className="p-6 text-center text-xs" style={{ color: T.muted }}>No categories yet &mdash; add some under BUDGET.</div>
+                  <div className="p-6 text-center text-xs" style={{ color: T.muted }}>No categories yet. Add some under BUDGET.</div>
                 ) : byCategory.map((c, i) => (
                   <div key={c.id || c.name} className="px-4 py-3 flex items-center gap-4" style={{ borderBottom: i < byCategory.length - 1 ? `1px solid ${T.hairline}` : "none" }}>
                     <div className="w-40 text-xs shrink-0 truncate">{c.name}</div>

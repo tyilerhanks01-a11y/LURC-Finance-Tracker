@@ -61,7 +61,7 @@ export default function ResetPassword() {
           <>
             <h1 className="serif text-2xl mb-3 mt-2" style={{ color: T.ink }}>Password updated</h1>
             <p className="text-xs mb-6" style={{ color: T.muted }}>
-              Your password has been changed. You're signed in &mdash; head back to The Ledger to continue.
+              Your password has been changed. You're signed in, so head back to The Ledger to continue.
             </p>
             <button
               onClick={() => (window.location.href = "/")}
